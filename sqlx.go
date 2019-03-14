@@ -12,7 +12,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/jmoiron/sqlx/reflectx"
+	"github.com/hagbei/sqlx/reflectx"
 )
 
 // Although the NameMapper is convenient, in practice it should not
@@ -319,6 +319,12 @@ func (db *DB) NamedExec(query string, arg interface{}) (sql.Result, error) {
 // Any placeholder parameters are replaced with supplied args.
 func (db *DB) Select(dest interface{}, query string, args ...interface{}) error {
 	return Select(db, dest, query, args...)
+}
+
+// NamedSelect using this DB.
+// Any placeholder parameters are replaced with supplied args.
+func (db *DB) NamedSelect(dest interface{}, query string, arg interface{}) error {
+	return NamedSelect(db, dest, query, arg)
 }
 
 // Get using this DB.

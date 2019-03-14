@@ -19,7 +19,7 @@ import (
 	"strconv"
 	"unicode"
 
-	"github.com/jmoiron/sqlx/reflectx"
+	"github.com/hagbei/sqlx/reflectx"
 )
 
 // NamedStmt is a prepared statement that executes named queries.  Prepare it
@@ -353,4 +353,24 @@ func NamedExec(e Ext, query string, arg interface{}) (sql.Result, error) {
 		return nil, err
 	}
 	return e.Exec(q, args...)
+}
+
+// NamedSelect executes a query using the provided Queryer, and StructScans each row
+// into dest, which must be a slice.  If the slice elements are scannable, then
+// the result set must have only one column.  Otherwise, StructScan is used.
+// The *sql.Rows are closed automatically.
+// Any placeholder parameters are replaced with supplied args.
+func NamedSelect(e Ext, dest interface{}, query string, arg interface{}) error {
+	q, args, err := bindNamedMapper(BindType(e.DriverName()), query, arg, mapperFor(e))
+	if err != nil {
+		return err
+	}
+
+	rows, err := e.Queryx(q, args...)
+	if err != nil {
+		return err
+	}
+	// if something happens here, we want to make sure the rows are Closed
+	defer rows.Close()
+	return scanAll(rows, dest, false)
 }
